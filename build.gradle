@@ -1,0 +1,84 @@
+plugins {
+    id 'java'
+    id 'eclipse'
+    id 'application'
+    id 'org.sonarqube' version '4.0.0.2929' 
+    id 'jacoco' 
+}
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+
+version = '1.0'
+
+jar {
+    manifest {
+        attributes(
+            'Implementation-Title': 'Example MapReduce using Gradle',
+            'Implementation-Version': version
+        )
+    }
+    archiveBaseName.set('example-hadoop')
+    archiveVersion.set('0.1.0')
+
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+configurations {
+    provided
+}
+
+sourceSets {
+    main {
+        compileClasspath += configurations.provided
+    }
+    test {
+        compileClasspath += configurations.provided
+        runtimeClasspath += configurations.provided
+    }
+}
+
+dependencies {
+    provided("org.apache.hadoop:hadoop-client:2.7.1")
+    provided("org.apache.hadoop:hadoop-common:2.7.1")
+
+    implementation("com.google.code.gson:gson:2.2.4")
+
+    testImplementation 'junit:junit:4.+'
+}
+
+sonarqube {
+    properties {
+        property "sonar.projectKey", "SonarQube-ltaoming"
+        property "sonar.sources", "src"
+        property "sonar.java.binaries", "build/classes/java/main"
+        property "sonar.host.url", "http://your-sonarqube-server"
+    }
+}
+
+test {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required.set(true)
+        csv.required.set(false)
+        html.outputLocation.set(layout.buildDirectory.dir("jacocoHtml"))
+    }
+}
+
+uploadArchives {
+    repositories {
+        flatDir {
+            dirs 'repos'
+        }
+    }
+}
