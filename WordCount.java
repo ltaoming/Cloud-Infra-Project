@@ -15,8 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.examples;
-
 import java.io.IOException;
 import java.util.StringTokenizer;
 
@@ -36,7 +34,7 @@ public class WordCount {
   public static class TokenizerMapper 
        extends Mapper<Object, Text, Text, IntWritable>{
     
-    private final static IntWritable one = new IntWritable(1);
+    private static final IntWritable one = new IntWritable(1);
     private Text word = new Text();
       
     public void map(Object key, Text value, Context context
@@ -69,7 +67,7 @@ public class WordCount {
     Configuration conf = new Configuration();
     String[] otherArgs = new GenericOptionsParser(conf, args).getRemainingArgs();
     if (otherArgs.length < 2) {
-      System.err.println("Usage: wordcount <in> [<in>...] <out>");
+      LOG.error("Usage: wordcount <in> [<in>...] <out>");
       System.exit(2);
     }
     Job job = Job.getInstance(conf, "word count");
