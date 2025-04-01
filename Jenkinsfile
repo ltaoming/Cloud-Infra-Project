@@ -10,10 +10,10 @@ pipeline {
         // run sonarqube test
         stage('Run Sonarqube') {
             environment {
-                scannerHome = tool 'SonarQubeScanner';
+                scannerHome = tool 'taoming-sonar-tool';
             }
             steps {
-              withSonarQubeEnv(credentialsId: 'sonarqube', installationName: 'SonarQube') {
+              withSonarQubeEnv(credentialsId: 'sonarqube-token', installationName: 'taoming sonar installation') {
                 sh "${scannerHome}/bin/sonar-scanner"
               }
             }
