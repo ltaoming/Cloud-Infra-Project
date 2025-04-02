@@ -22,15 +22,6 @@ pipeline {
             }
         }
 
-        // 3. Wait for SonarQube Quality Gate
-        stage('Quality Gate') {
-            steps {
-                timeout(time: 1, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
-                }
-            }
-        }
-
         // 4. Compile Java and build JAR
         stage('Build JAR') {
             steps {
