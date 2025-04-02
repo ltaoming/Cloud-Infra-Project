@@ -29,30 +29,38 @@ pipeline {
             }
         }
 
-        // 4. Upload WordCount.java source to GCS
+        // 4. Upload Java source to GCS (runs inside google/cloud-sdk container)
         stage('Upload Java Source to GCS') {
+            agent {
+                docker {
+                    image 'google/cloud-sdk:latest'
+                }
+            }
             steps {
                 withCredentials([file(credentialsId: 'gcp-service-account-json', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
                     sh '''
                         gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
                         gcloud config set project $GCP_PROJECT
-
-                        echo "Uploading $JAVA_SRC_PATH to GCS..."
                         gsutil cp $JAVA_SRC_PATH gs://$GCS_BUCKET/src/
                     '''
                 }
             }
         }
 
-        // 5. Compile and run the Hadoop job on Dataproc master node
+        // 5. SSH into Dataproc and compile + run WordCount
         stage('Compile and Run on Dataproc') {
+            agent {
+                docker {
+                    image 'google/cloud-sdk:latest'
+                }
+            }
             steps {
                 withCredentials([file(credentialsId: 'gcp-service-account-json', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
                     sh '''
                         gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
                         gcloud config set project $GCP_PROJECT
 
-                        echo "Running WordCount job via SSH on Dataproc master node..."
+                        echo "SSH into Dataproc master and run Hadoop job..."
 
                         gcloud compute ssh $MASTER_NODE \
                           --zone=$ZONE \
