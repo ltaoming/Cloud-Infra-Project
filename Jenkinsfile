@@ -13,15 +13,15 @@ pipeline {
     }
 
     stages {
+        // 1. Checkout GitHub source code
         stage('SCM Checkout') {
-            agent any
             steps {
                 git branch: 'main', url: 'https://github.com/ltaoming/Cloud-Infra-Project'
             }
         }
 
+        // 2. SonarQube static code analysis
         stage('Run Sonarqube') {
-            agent any
             steps {
                 withSonarQubeEnv(credentialsId: 'sonarqube-token', installationName: 'taoming sonar installation') {
                     sh "${scannerHome}/bin/sonar-scanner"
@@ -29,36 +29,30 @@ pipeline {
             }
         }
 
+        // 4. Upload WordCount.java source to GCS
         stage('Upload Java Source to GCS') {
-            agent {
-                docker {
-                    image 'google/cloud-sdk:latest'
-                }
-            }
             steps {
                 withCredentials([file(credentialsId: 'gcp-service-account-json', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
                     sh '''
                         gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
                         gcloud config set project $GCP_PROJECT
+
+                        echo "Uploading $JAVA_SRC_PATH to GCS..."
                         gsutil cp $JAVA_SRC_PATH gs://$GCS_BUCKET/src/
                     '''
                 }
             }
         }
 
+        // 5. Compile and run the Hadoop job on Dataproc master node
         stage('Compile and Run on Dataproc') {
-            agent {
-                docker {
-                    image 'google/cloud-sdk:latest'
-                }
-            }
             steps {
                 withCredentials([file(credentialsId: 'gcp-service-account-json', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
                     sh '''
                         gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
                         gcloud config set project $GCP_PROJECT
 
-                        echo "SSH into Dataproc master and run Hadoop job..."
+                        echo "Running WordCount job via SSH on Dataproc master node..."
 
                         gcloud compute ssh $MASTER_NODE \
                           --zone=$ZONE \
