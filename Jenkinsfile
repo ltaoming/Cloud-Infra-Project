@@ -1,27 +1,27 @@
 pipeline {
-    agent any
+    agent none
 
     environment {
         scannerHome = tool 'taoming-sonar-tool'
         GCP_PROJECT = 'cloud-infra-project-455521'
-        GCS_BUCKET = 'dataproc-staging-us-central1-909480457255-af116jxa'
+        GCS_BUCKET = 'dataproc-staging-us-central1-909480457255-afl16jxa'
         JAVA_SRC_PATH = 'src/example/WordCount.java'
-        CLUSTER_NAME = 'dataproc-cluster'       
-        REGION = 'us-central1'                    
-        ZONE = 'us-central1-a'                        
-        MASTER_NODE = 'dataproc-cluster-m'    
+        CLUSTER_NAME = 'dataproc-cluster'
+        REGION = 'us-central1'
+        ZONE = 'us-central1-a'
+        MASTER_NODE = 'dataproc-cluster-m'
     }
 
     stages {
-        // 1. Checkout GitHub source code
         stage('SCM Checkout') {
+            agent any
             steps {
                 git branch: 'main', url: 'https://github.com/ltaoming/Cloud-Infra-Project'
             }
         }
 
-        // 2. SonarQube static code analysis
         stage('Run Sonarqube') {
+            agent any
             steps {
                 withSonarQubeEnv(credentialsId: 'sonarqube-token', installationName: 'taoming sonar installation') {
                     sh "${scannerHome}/bin/sonar-scanner"
@@ -29,7 +29,6 @@ pipeline {
             }
         }
 
-        // 4. Upload Java source to GCS (runs inside google/cloud-sdk container)
         stage('Upload Java Source to GCS') {
             agent {
                 docker {
@@ -47,7 +46,6 @@ pipeline {
             }
         }
 
-        // 5. SSH into Dataproc and compile + run WordCount
         stage('Compile and Run on Dataproc') {
             agent {
                 docker {
