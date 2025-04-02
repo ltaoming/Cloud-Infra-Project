@@ -27,7 +27,7 @@ pipeline {
             steps {
                 sh '''
                     mkdir -p build
-                    javac -d build src/WordCount.java
+                    javac -d build src/example/WordCount.java
                     jar -cvf WordCount.jar -C build .
                 '''
             }
