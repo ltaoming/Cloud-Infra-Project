@@ -19,15 +19,16 @@ pipeline {
         }
 
         stage('Run Sonarqube') {
+            environment {
+                scannerHome = tool 'taoming-sonar-tool';
+            }
             steps {
-                node {
-                    def scannerHome = tool 'taoming-sonar-tool'
-                    withSonarQubeEnv(credentialsId: 'sonarqube-token', installationName: 'taoming sonar installation') {
-                        sh "${scannerHome}/bin/sonar-scanner"
-                    }
-                }
+              withSonarQubeEnv(credentialsId: 'sonarqube-token', installationName: 'taoming sonar installation') {
+                sh "${scannerHome}/bin/sonar-scanner"
+              }
             }
         }
+
 
 
         stage('Upload Java Source to GCS') {
