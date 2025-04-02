@@ -1,5 +1,5 @@
 pipeline {
-    agent none
+    agent any
 
     environment {
         GCP_PROJECT = 'cloud-infra-project-455521'
