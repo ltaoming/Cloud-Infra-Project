@@ -53,9 +53,9 @@ pipeline {
         stage('Upload and Compile WordCount') {
             steps {
                 script {
-                    def REGION = '<your-region>'
+                    def REGION = 'us-central1'
                     def CLUSTER = 'dataproc-cluster'
-                    def PROJECT = '<your-gcp-project-id>'
+                    def PROJECT = 'cloud-infra-project-455521'
                     def MASTER_NODE = sh(
                         script: "gcloud dataproc clusters describe ${CLUSTER} --region=${REGION} --project=${PROJECT} --format='value(config.masterConfig.instanceNames[0])'",
                         returnStdout: true
